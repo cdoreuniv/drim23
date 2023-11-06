@@ -1,0 +1,110 @@
+---
+title: "DRIM Game 2023"
+format: pdf
+toc: true
+---
+
+## Chargement des librairies
+
+```{r}
+#| message: false
+#| warning: false
+# Lecture des fichiers de données 
+library(readr)
+library(readxl) # Fichiers au format .xlsx
+library(haven) # Fichiers au format .sas7bdat
+
+library(sf)
+library(dplyr)
+library(tmap)
+library(leaflet)
+library(ggplot2)
+library(spdep)
+library(zoo)
+
+```
+
+## Chargement des données et mise en place d'une bdd unique
+
+```{r}
+# Chargement de la table sur les créations d'entreprise
+data_cre = read_sas("donnees/table_creation_2017_2023.sas7bdat")
+data_cre$date = as.yearqtr(data_cre$trimestre, format = "%q%Y")
+
+
+# Chargement de la table sur les défaillances d'entreprise
+data_def = read_sas("donnees/table_defaut_2017_2023.sas7bdat")
+data_def$date = as.yearqtr(data_def$trimestre, format = "%q%Y")
+
+# Chargement des données macroéconomiques
+## Chômage
+data_chom = read_excel(path = "donnees/Series macroeconomiques.xlsx",
+                        sheet = "Taux de chômage 2012-2021",
+                       skip = 3)
+data_chom = data_chom[1:19,]
+
+## PIB en valeur
+data_PIBval = read_excel(path = "donnees/Series macroeconomiques.xlsx",
+                        sheet = "PIB en valeur 2012-2021",
+                       skip = 3)
+data_PIBval = data_PIBval[-c(1,24:26),]
+
+## PIB en volume
+data_PIBvol = read_excel(path = "donnees/Series macroeconomiques.xlsx",
+                        sheet = "PIB en volume 2012-2021",
+                       skip = 3)
+data_PIBvol = data_PIBvol[-c(1,24:26),]
+
+## PIB par habitant
+data_PIBhab = read_excel(path = "donnees/Series macroeconomiques.xlsx",
+                        sheet = "PIB par hab 2012-2021",
+                       skip = 3)
+data_PIBhab = data_PIBhab[-c(1,24:26),]
+
+## PIB par emploi
+data_PIBemp = read_excel(path = "donnees/Series macroeconomiques.xlsx",
+                        sheet = "PIB par emploi 2012-2021",
+                       skip = 3)
+data_PIBemp = data_PIBemp[-c(1,24:26),]
+
+# Chargement des données sur les primes exceptionnelles
+data_primex = read_csv2("donnees/primes-exceptionnelles-du-secteur-prive-par-trimestre-par-region.csv")
+date = paste(0,data_primex$Trimestre, data_primex$`﻿Année`, sep = "")
+data_primex$date = as.yearqtr(date, format = "%q%Y")
+
+# Chargement des données sur les privé partage de valeur
+data_primpart = read_csv2("donnees/prime-partage-valeur-du-secteur-prive-par-trimestre-par-region.csv")
+date = paste(0,data_primpart$Trimestre, data_primpart$`﻿Année`, sep = "")
+data_primpart$date = as.yearqtr(date, format = "%q%Y")
+
+# Chargement des données sur les effectifs
+data_effe = read_csv2("donnees/effectifs-salaries-et-masse-salariale-du-secteur-prive-par-region-x-na38.csv")
+date = paste(0,data_effe$Trimestre, data_effe$Année, sep = "")
+data_effe$date = as.yearqtr(date, format = "%q%Y")
+
+# Chargement des données sur les catastrophes naturelles
+data_casta = read_excel(path = "donnees/catastrophes_naturelles .xlsx",
+                        sheet = "données")
+```
+
+# Chargement des données
+
+```{r}
+#| message: false
+#| warning: false
+carte = st_read("data/DEPARTEMENT.shp")
+View(carte)
+defauts = read_csv2("data/TABLE_DEFAUT_2017_2023.csv")
+
+### --------- Regroupement des données ----------------
+carte <- carte %>%
+  rename(code_dep = INSEE_DEP)
+shp_defauts <- left_join(carte, defauts, by = "code_dep")
+shp_defauts # Il n'y a pas les départements d'Outre-Mer
+```
+
+# Visualisation de la carte et des défauts
+
+```{r}
+
+```
